@@ -5,9 +5,11 @@
 
 // A simple to use rotary encoder class. Place the poll function in an interrupt routine or main code. Must be checked very regularly if in main code or it WILL miss events.
 
-#include "MilliTimer.h"
 #include "arduino.h"
+#include "Enc.h"
 #include "ButtonHandler.h"
+#include "MilliTimer.h"
+
 
 //Uncomment following line to enable debugging serial comments.
 #define DEBUG
@@ -33,35 +35,7 @@ enum class encoderEnum : uint8_t{
     ACW_RATE3
 };
 
-enum class stepEnum : uint8_t{
-    NO_CHANGE,
-    CW_CHANGE,
-    ACW_CHANGE,
-    ILLEGAL_CHANGE
-};
-
-// Need to check the size of this and possibly shrink it. Possible it is taking up 16 bytes
-const stepEnum stateTable[16] = {
-    stepEnum::NO_CHANGE,        // 0000 0
-    stepEnum::ACW_CHANGE,       // 0001 1
-    stepEnum::CW_CHANGE,        // 0010 2
-    stepEnum::ILLEGAL_CHANGE,   // 0011 3
-    stepEnum::CW_CHANGE,        // 0100 4
-    stepEnum::NO_CHANGE,        // 0101 5
-    stepEnum::ILLEGAL_CHANGE,   // 0110 6
-    stepEnum::ACW_CHANGE,       // 0111 7
-    stepEnum::ACW_CHANGE,       // 1000 8
-    stepEnum::ILLEGAL_CHANGE,   // 1001 9
-    stepEnum::NO_CHANGE,        // 1010 10
-    stepEnum::CW_CHANGE,        // 1011 11
-    stepEnum::ILLEGAL_CHANGE,   // 1100 12
-    stepEnum::CW_CHANGE,        // 1101 13
-    stepEnum::ACW_CHANGE,       // 1110 14
-    stepEnum::NO_CHANGE         // 1111 15
-};
-
-class Encoder
-{
+class Encoder{
     public:
         Encoder(); // default to no pins so that we can define an array of them.
         Encoder(uint8_t pinA, uint8_t pinB);
@@ -95,26 +69,14 @@ class Encoder
         void enable();
         void disable();
     private:
-        //pins
-        uint8_t pinA;
-        uint8_t pinB;
-        uint8_t pinC;
-        bool reversed = false;
+        // button 
+        ButtonHandler button;
+        // encoder
+        Enc encoder;
 
         // Encoder enable state
         bool buttonEnabled = true;
         bool encoderEnabled = true;
-        
-        // button and encoder pin states
-        uint8_t AB = 0xF;       // B1111 because the rotary encoder will be in neutral state and the pullups will make the readings high.
-        // uint8_t ABold = 0xF;
-
-        // See documentation for workings/logic of this lookup table
-        
-        encoderEnum encoderPoll();
-        
-        // button settings
-        ButtonHandler button;
 
         // encoder settings
         unsigned int rate2Threshold = 125;

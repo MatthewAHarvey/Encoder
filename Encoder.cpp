@@ -1,69 +1,34 @@
 #include "Encoder.h"
-#include "arduino.h"
-
 
 Encoder::Encoder(){
 
 }
 
 Encoder::Encoder(uint8_t pinA, uint8_t pinB){
-    this->pinA = pinA;
-    this->pinB = pinB;
+    encoder = Enc(pinA, pinB);
     buttonEnabled = false;
 }
 
 Encoder::Encoder(uint8_t pinA, uint8_t pinB, uint8_t pinC){
-    this->pinA = pinA;
-    this->pinB = pinB;
-    this->pinC = pinC;
+    encoder = Enc(pinA, pinB);
+    button = ButtonHandler(pinC);
 }
 
 void Encoder::init(){
-    pinMode(pinA, INPUT_PULLUP);
-    pinMode(pinB, INPUT_PULLUP);
+    encoder.init();
     if(buttonEnabled){
-        button.init(pinC);
+        button.init();
     }
 }
 
 void Encoder::init(uint8_t pinA, uint8_t pinB){
-    this->pinA = pinA;
-    this->pinB = pinB;
+    encoder.init(pinA, pinB);
     buttonEnabled = false;
-
-    pinMode(pinA, INPUT_PULLUP);
-    pinMode(pinB, INPUT_PULLUP);
 }
 
 void Encoder::init(uint8_t pinA, uint8_t pinB, uint8_t pinC){
-    this->pinA = pinA;
-    this->pinB = pinB;
-    this->pinC = pinC;
-    pinMode(pinA, INPUT_PULLUP);
-    pinMode(pinB, INPUT_PULLUP);
+    encoder.init(pinA, pinB);
     button.init(pinC);
-    // pinMode(pinC, INPUT_PULLUP);
-
-    // buttonDebounceTimer.updateTimeOut(buttonDebounceTime);
-    // buttonHoldTimer.updateTimeOut(buttonHoldMin);
-    // buttonDoubleClickTimer.updateTimeOut(doubleClickMax);
-}
-
-encoderEnum Encoder::encoderPoll(){
-    AB = AB << 2; // Shift the old AB data two places to the left.
-    AB |= (digitalRead(pinA) << 1) | digitalRead(pinB); // Add in the new AB data
-    AB &= 0xF; // Mask with B00001111 to remove really old data so that we are left only with old AB and new AB.
-    switch(stateTable[AB]){
-        // case stepEnum::NO_CHANGE:                           break;
-        case stepEnum::CW_CHANGE:       stepCounter++;      break;
-        case stepEnum::ACW_CHANGE:      stepCounter--;      break;
-        case stepEnum::ILLEGAL_CHANGE:  stepCounter = 0;    break;
-    }
-    switch(stepCounter){
-        case -4:    stepCounter = 0;    return encoderEnum::ACW_RATE1;
-        case 4:     stepCounter = 0;    return encoderEnum::CW_RATE1;
-        default:                        return encoderEnum::NO_CHANGE;
-    }
 }
 
 encoderEnum Encoder::poll(bool rateless){
@@ -79,13 +44,12 @@ encoderEnum Encoder::poll(bool rateless){
 
     if(encoderEnabled)
     {
-        encoderEnum result = encoderPoll();
-
-        uint16_t encoderTimeDiff;// = encoderTimer.elapsed();
+        encEnum result = encoder.poll();
+        uint16_t encoderTimeDiff= encoderTimer.elapsed();
         switch(result){
-            case encoderEnum::ACW_RATE1:
+            case encEnum::ACW:
                 // stepCounter = 0;
-                encoderTimeDiff = encoderTimer.elapsed();
+                // encoderTimeDiff = encoderTimer.elapsed();
                 encoderTimer.reset();
                 if(encoderTimeDiff < rate3Threshold && !rateless){
                     return encoderEnum::ACW_RATE3;
@@ -97,9 +61,9 @@ encoderEnum Encoder::poll(bool rateless){
                     return encoderEnum::ACW_RATE1;
                 }
                 break;
-            case encoderEnum::CW_RATE1:
+            case encEnum::CW:
                 // stepCounter = 0;
-                encoderTimeDiff = encoderTimer.elapsed();
+                // encoderTimeDiff = encoderTimer.elapsed();
                 encoderTimer.reset();
                 if(encoderTimeDiff < rate3Threshold && !rateless){
                     return encoderEnum::CW_RATE3;
@@ -125,11 +89,11 @@ uint16_t Encoder::getButtonHoldTime(){
 }
 
 uint16_t Encoder::getDoubleClickMax(){
-    return getDoubleClickMax();
+    return button.getDoubleClickMax();
 }
 
 uint16_t Encoder::getDebounceTime(){
-    return getDebounceTime();
+    return button.getDebounceTime();
 }
 
 uint16_t Encoder::getRate2Max(){
@@ -141,7 +105,7 @@ uint16_t Encoder::getRate3Max(){
 }
 
 bool Encoder::getReversedDirection(){
-    return reversed;
+    return encoder.getReversedDirection();
 }
 
 void Encoder::setButtonHoldTime(uint16_t t){
@@ -189,13 +153,7 @@ void Encoder::setState(uint8_t state){
 }
 
 void Encoder::setReversedDirection(bool reverse){
-    if(reverse != reversed){
-        // need to flip the pins
-        reversed = reverse;
-        uint8_t tmp = pinB;
-        pinB = pinA;
-        pinA = tmp;    
-    }
+    encoder.setReversedDirection(reverse);
 }
 
 uint8_t Encoder::getState(){

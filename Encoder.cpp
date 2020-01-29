@@ -44,10 +44,9 @@ encoderEnum Encoder::poll(bool rateless){
 
     if(encoderEnabled)
     {
-        encEnum result = encoder.poll();
         uint16_t encoderTimeDiff= encoderTimer.elapsed();
-        switch(result){
-            case encEnum::ACW:
+        switch(encoder.poll()){
+            case -1:
                 // stepCounter = 0;
                 // encoderTimeDiff = encoderTimer.elapsed();
                 encoderTimer.reset();
@@ -61,7 +60,7 @@ encoderEnum Encoder::poll(bool rateless){
                     return encoderEnum::ACW_RATE1;
                 }
                 break;
-            case encEnum::CW:
+            case 1:
                 // stepCounter = 0;
                 // encoderTimeDiff = encoderTimer.elapsed();
                 encoderTimer.reset();

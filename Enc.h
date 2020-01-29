@@ -30,12 +30,6 @@ const encStepEnum encStateTable[16] = {
     encStepEnum::NO_CHANGE         // 1111 15
 };
 
-enum class encEnum : uint8_t{
-    NO_CHANGE = 0,
-    CW, 
-    ACW
-};
-
 class Enc{
 public:
     Enc();
@@ -44,7 +38,7 @@ public:
     void init();
     void init(uint8_t pinA, uint8_t pinB);
 
-    encEnum poll();
+    int8_t poll();
 
     void setReversedDirection(bool reverse);
     bool getReversedDirection();

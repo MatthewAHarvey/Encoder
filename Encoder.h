@@ -47,19 +47,19 @@ class Encoder{
         encoderEnum poll(bool rateless = false); // checks the state of the encoder and returns new steps if necessary. Call in pinchange interrupt routine or poll in main loop. If polling, do not including blocking code such as delay()!
         encoderEnum poll_rateless();
 
-        unsigned int getButtonHoldTime();
-        unsigned int getDoubleClickMax();
-        unsigned int getDebounceTime();
-        unsigned int getRate2Max();
-        unsigned int getRate3Max();
+        uint16_t getButtonHoldTime();
+        uint16_t getDoubleClickMax();
+        uint16_t getDebounceTime();
+        uint16_t getRate2Max();
+        uint16_t getRate3Max();
         uint8_t getState();
         bool getReversedDirection();
         
-        void setButtonHoldTime(unsigned int t);
-        void setDoubleClickMax(unsigned int t);
-        void setDebounceTime(unsigned int t);
-        void setRate2Max(unsigned int t);
-        void setRate3Max(unsigned int t);
+        void setButtonHoldTime(uint16_t t);
+        void setDoubleClickMax(uint16_t t);
+        void setDebounceTime(uint16_t t);
+        void setRate2Max(uint16_t t);
+        void setRate3Max(uint16_t t);
         void setState(uint8_t state);
         void setReversedDirection(bool reverse);
         void enableButton();
@@ -73,19 +73,13 @@ class Encoder{
         ButtonHandler button;
         // encoder
         Enc encoder;
+        MilliTimer encoderTimer;
+        uint16_t rate2Threshold = 125;
+        uint16_t rate3Threshold = 25;
 
         // Encoder enable state
         bool buttonEnabled = true;
-        bool encoderEnabled = true;
-
-        // encoder settings
-        unsigned int rate2Threshold = 125;
-        unsigned int rate3Threshold = 25;
-
-        // timers
-        MilliTimer encoderTimer;
-
-        int8_t stepCounter = 0;
+        bool encoderEnabled = true;        
 };
 
 #endif
